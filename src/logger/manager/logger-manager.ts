@@ -1,5 +1,7 @@
 import { LoggerEntry } from "../../interfaces/log-entry.interface";
 import { FileWriter } from "../writer/file-writer";
+import { compressionWorker } from '../worker/index'
+
 
 export class LoggerManager {
   private buffer: LoggerEntry[] = [];
@@ -34,5 +36,25 @@ export class LoggerManager {
     this.buffer = [];
 
     this.fileWriter.write(logsToWrite);
+
+    const rotatedFile =
+      this.fileWriter.rotateIfNeeded();
+
+    if (rotatedFile) {
+      compressionWorker
+        .compress(rotatedFile)
+        .then((gzFile) => {
+          console.log(
+            "Compression Success",
+            gzFile
+          );
+        })
+        .catch((error) => {
+          console.error(
+            "Compression Failed",
+            error
+          );
+        });
+    }
   }
 }

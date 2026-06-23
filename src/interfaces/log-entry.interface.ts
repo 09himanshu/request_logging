@@ -1,6 +1,9 @@
+import {LogLevel} from '../types/log-levels.types'
+
 export interface LoggerEntry {
   requestId: string;
-  timestamp: Date;
+  timestamp: string;
+  level: LogLevel;
   method: string;
   route: string;
   statusCode: number;

@@ -7,6 +7,6 @@ export function buildLogEntry(
 ): LoggerEntry {
   return {
     ...input,
-    timestamp: new Date(),
+    timestamp: new Date().toISOString(),
   };
 }

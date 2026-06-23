@@ -2,6 +2,7 @@ import express from "express";
 
 import { requestLoggerMiddleware } from "./middleware/request-logger.middleware";
 import { loggerManager } from "./logger";
+import {compressionWorker} from './worker/comprosser.worker'
 
 const app = express();
 
@@ -26,6 +27,7 @@ const PORT = 3000;
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
 function gracefulShutdown() {
   console.log("Flushing logs before shutdown...");

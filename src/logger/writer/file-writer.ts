@@ -4,50 +4,64 @@ import path from "path";
 import { LoggerEntry } from "../../interfaces/log-entry.interface";
 
 export class FileWriter {
-  private stream: fs.WriteStream | null = null;
-  private currentFileDate: string = "";
+  private stream!: fs.WriteStream;
+  private currentDate: string;
 
   constructor() {
-    this.ensureStreamForDate();
+    this.currentDate = this.getCurrentDate();
+    this.createStream(this.currentDate);
   }
 
-  private ensureStreamForDate(): void {
-    const todayDate = new Date().toISOString().split("T")[0] || "";
-    if (this.currentFileDate === todayDate && this.stream) {
-      return;
-    }
+  private getCurrentDate(): string {
+    return new Date().toISOString().split("T")[0] ?? "";
+  }
 
-    if (this.stream) {
-      this.stream.end();
-    }
-
+  private createStream(date: string): void {
     const logsDir = path.join(process.cwd(), "logs");
 
     if (!fs.existsSync(logsDir)) {
       fs.mkdirSync(logsDir, { recursive: true });
     }
 
-    const fileName = `request-log-${todayDate}.jsonl`;
-    const filePath = path.join(logsDir, fileName);
+    const filePath = path.join(
+      logsDir,
+      `request-log-${date}.jsonl`
+    );
 
-    this.currentFileDate = todayDate;
     this.stream = fs.createWriteStream(filePath, {
       flags: "a",
     });
+
+    this.stream.on("error", (error) => {
+      console.error("Logger stream error:", error);
+    });
   }
 
+  public rotateIfNeeded(): string | null {
+    const today = this.getCurrentDate();
+
+    if (today === this.currentDate) {
+      return null;
+    }
+
+    const rotatedDate = this.currentDate;
+
+    this.stream.end();
+
+    this.currentDate = today;
+
+    this.createStream(today);
+
+    return rotatedDate;
+  }
+
+
+
   public write(logs: LoggerEntry[]): void {
-    this.ensureStreamForDate();
     const payload = logs
       .map((log) => JSON.stringify(log))
       .join("\n");
 
-    if (this.stream) {
-      this.stream.write(payload + "\n");
-    }
-  }
-
-  public getActiveFileName(): string {
-    return `request-log-${this.currentFileDate}.jsonl`;
+    this.stream.write(payload + "\n");
   }
 }

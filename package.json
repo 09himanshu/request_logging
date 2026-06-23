@@ -17,6 +17,7 @@
     "tsx": "^4.22.4"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1075.0",
     "express": "^5.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",

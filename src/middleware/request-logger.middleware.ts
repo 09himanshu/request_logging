@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { buildLogEntry } from "../logger/builders/log-entry-builder";
 import { loggerManager } from "../logger";
+import {getLogLevel} from "../helper/get-log-level"
 
 const SENSITIVE_KEYS = new Set([
   "password",
@@ -23,7 +24,7 @@ function redact(obj: any): any {
     return obj.map(redact);
   }
   const redacted: any = {};
-  
+
   for (const key of Object.keys(obj)) {
     const lowerKey = key.toLowerCase();
     if (SENSITIVE_KEYS.has(lowerKey)) {
@@ -77,6 +78,7 @@ export function requestLoggerMiddleware(
 
       const logEntry = buildLogEntry({
         requestId,
+        level: getLogLevel(res.statusCode),
         method: req.method,
         route: req.route?.path || req.originalUrl,
         statusCode: res.statusCode,
